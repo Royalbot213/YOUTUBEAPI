@@ -1,0 +1,12 @@
+{
+  "name": "Fresh YouTube API",
+  "description": "FastAPI YouTube downloader with Telegram API-key bot",
+  "buildpacks": [
+    {
+      "url": "https://github.com/heroku/heroku-buildpack-apt"
+    },
+    {
+      "url": "heroku/python"
+    }
+  ]
+}

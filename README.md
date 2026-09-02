@@ -1,87 +1,72 @@
-# YOUTUBEAPI — Heroku Ready
+# Fresh YouTube API + Telegram Bot
 
-FastAPI + Telegram bot project, configured for one-click Heroku deployment.
+A fresh Heroku-ready project containing:
 
-## 🚀 Deploy to Heroku
+- FastAPI web API
+- Telegram bot
+- 30-day deterministic API keys
+- YouTube audio -> MP3
+- YouTube video -> MP4
+- FFmpeg
+- No SQLite, so web and worker dynos do not need shared storage
 
-> **Important:** The button works after this repository is pushed to GitHub and the URL below is changed to your real GitHub repository.
+## Heroku Config Vars
 
-### One-click button
+Required:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Royalbot213/YOUTUBEAPI)
+- `BOT_TOKEN`
+- `API_KEY_SECRET`
 
-### Replace the button URL
+`API_KEY_SECRET` can be any long random secret.
 
-Change:
+Optional:
 
-```text
-https://github.com/YOUR_USERNAME/YOUR_REPOSITORY
-```
+- `API_BASE_URL` = your Heroku app URL
 
-to your actual public GitHub repository, for example:
+Example:
 
-```text
-https://github.com/myname/YOUTUBEAPI
-```
+`https://your-app-name.herokuapp.com`
 
-Then the final Deploy URL is:
+## Deploy
 
-```text
-https://heroku.com/deploy?template=https://github.com/myname/YOUTUBEAPI
-```
+1. Create a new Heroku app.
+2. Deploy this project.
+3. Make sure the Apt buildpack is installed and `Aptfile` contains `ffmpeg`.
+4. Set the Config Vars.
+5. Scale:
+   - web = 1
+   - worker = 1
 
-## ⚙️ Required Heroku Config Vars
+The Procfile already contains both processes.
 
-The Deploy button will request these values from `app.json`:
+## Test
 
-| Variable | Required | Where to get it |
-|---|---|---|
-| `API_ID` | Yes | `my.telegram.org` |
-| `API_HASH` | Yes | `my.telegram.org` |
-| `BOT_TOKEN` | Yes | `@BotFather` on Telegram |
-| `RONAK_API_URL` | No | Public API URL, if needed |
-| `RONAK_API_KEY` | No | Optional API key used by the client |
+Open:
 
-Do **not** put real Telegram credentials directly into the source code.
+`/health`
 
-## 🛠️ Heroku deployment
+Expected:
 
-1. Push this project to a **public GitHub repository**.
-2. Make sure these files are in the repository root:
-   - `app.json`
-   - `Procfile`
-   - `requirements.txt`
-   - `apt.txt`
-   - `bot.py`
-   - `api.py`
-3. Open the Deploy button above.
-4. Enter the required Config Vars.
-5. Choose an app name and click **Deploy app**.
-6. After deployment, open **Resources** and make sure the `web` dyno is enabled.
-7. Open **View logs** if you want to verify the bot/API startup.
+`{"status":"ok"}`
 
-## 🌐 API
+Open `/docs` for Swagger.
 
-The Heroku web process starts both:
+## API
 
-- Telegram bot: `bot.py`
-- FastAPI server: `api:app`
+GET `/download`
 
-The FastAPI server listens on Heroku's `$PORT` automatically.
+Parameters:
 
-After deployment, your API base URL will be:
+- `url`
+- `type=audio` or `type=video`
+- `api_key`
 
-```text
-https://YOUR-APP-NAME.herokuapp.com
-```
+Example:
 
-## 🔐 Security
+`/download?url=https://www.youtube.com/watch?v=VIDEO_ID&type=audio&api_key=YOUR_KEY`
 
-Never commit:
+## Telegram
 
-- Telegram `BOT_TOKEN`
-- Telegram `API_HASH`
-- private API keys
-- session strings
+Send `/start` to the bot.
 
-If a real token was previously exposed in a repository, revoke/rotate it before deploying.
+No `API_ID` or `API_HASH` is required because this version uses the Bot API through `python-telegram-bot`.
