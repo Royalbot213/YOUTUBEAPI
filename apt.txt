@@ -1,1 +1,1 @@
-ffmpeg
+# Use Aptfile for the Heroku APT buildpack.

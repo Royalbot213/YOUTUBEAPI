@@ -12,9 +12,16 @@ import database
 # HEROKU CONFIG VARS
 # =========================================================
 
-API_ID = int(os.environ["API_ID"])
-API_HASH = os.environ["API_HASH"]
-BOT_TOKEN = os.environ["BOT_TOKEN"]
+def require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Missing required Heroku Config Var: {name}")
+    return value
+
+
+API_ID = int(require_env("API_ID"))
+API_HASH = require_env("API_HASH")
+BOT_TOKEN = require_env("BOT_TOKEN")
 
 
 # =========================================================

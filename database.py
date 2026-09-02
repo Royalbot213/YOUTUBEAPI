@@ -9,13 +9,15 @@ DB_NAME = os.environ.get("DB_NAME", "ronak_system.db")
 
 async def init_db():
     async with aiosqlite.connect(DB_NAME) as db:
-        await db.execute("""
+        await db.execute(
+            """
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
                 api_key TEXT UNIQUE NOT NULL,
                 expiry_date TEXT NOT NULL
             )
-        """)
+            """
+        )
         await db.commit()
 
 
@@ -23,7 +25,7 @@ async def get_or_create_key(user_id: int):
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute(
             "SELECT api_key, expiry_date FROM users WHERE user_id = ?",
-            (user_id,)
+            (user_id,),
         )
         row = await cursor.fetchone()
 
@@ -31,7 +33,10 @@ async def get_or_create_key(user_id: int):
 
         if row:
             api_key, expiry_str = row
-            expiry_date = datetime.fromisoformat(expiry_str)
+            try:
+                expiry_date = datetime.fromisoformat(expiry_str)
+            except (TypeError, ValueError):
+                expiry_date = now - timedelta(seconds=1)
 
             if now >= expiry_date:
                 new_key = f"RonakBots_{secrets.token_hex(8)}"
@@ -43,7 +48,7 @@ async def get_or_create_key(user_id: int):
                     SET api_key = ?, expiry_date = ?
                     WHERE user_id = ?
                     """,
-                    (new_key, new_expiry.isoformat(), user_id)
+                    (new_key, new_expiry.isoformat(), user_id),
                 )
                 await db.commit()
 
@@ -59,7 +64,7 @@ async def get_or_create_key(user_id: int):
             INSERT INTO users (user_id, api_key, expiry_date)
             VALUES (?, ?, ?)
             """,
-            (user_id, new_key, new_expiry.isoformat())
+            (user_id, new_key, new_expiry.isoformat()),
         )
         await db.commit()
 
@@ -73,7 +78,7 @@ async def verify_key(api_key: str):
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute(
             "SELECT expiry_date FROM users WHERE api_key = ?",
-            (api_key,)
+            (api_key,),
         )
         row = await cursor.fetchone()
 
