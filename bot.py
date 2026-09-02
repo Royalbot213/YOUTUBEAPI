@@ -6,9 +6,9 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import database
 
 # अपनी डिटेल्स यहाँ डालें
-API_ID = int(os.environ["API_ID"])
-API_HASH = os.environ["API_HASH"]
-BOT_TOKEN = os.environ["BOT_TOKEN"]
+API_ID = int(os.environ["25392624"])
+API_HASH = os.environ["c9208c6e73e4d48a7a03c3ee296995be"]
+BOT_TOKEN = os.environ["8445491147:AAGsmkrcdtY1qNPgkGbi2yl_7fjV7hiNmQY"]
 
 app = Client("YouTubeapi", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
