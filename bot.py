@@ -119,8 +119,8 @@ from pyrogram.types import Message
 from py_yt import VideosSearch, Playlist
 import aiohttp
 
-API_URL = os.environ.get("RONAK_API_URL", "https://web-production-94922.up.railway.app")
-API_KEY = os.environ.get("RONAK_API_KEY", "YOUR_API_KEY_HERE") ## Get This API KEY FROM @RonakKeyBot 
+API_URL = os.environ.get("RONAK_API_URL", "https://youtubeapi-india.herokuapp.com")
+API_KEY = os.environ.get("RONAK_API_KEY", "YOUR_API_KEY_HERE") ## Get This API KEY FROM @AllQuizXBot 
 
 DOWNLOAD_DIR = "downloads"
 
