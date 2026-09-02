@@ -8,7 +8,7 @@ FastAPI + Telegram bot project, configured for one-click Heroku deployment.
 
 ### One-click button
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/YOUR_USERNAME/YOUR_REPOSITORY)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Royalbot213/YOUTUBEAPI)
 
 ### Replace the button URL
 
