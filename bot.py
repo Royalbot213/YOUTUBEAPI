@@ -81,8 +81,8 @@ async def on_callback(client, query):
     elif data == "api_docs":
         text = (
             "**API Documentation**\n\n"
-            "**Base URL:** `https://web-production-94922.up.railway.app`\n"
-            "**Primary API:** `https://web-production-94922.up.railway.app/download`\n\n"
+            "**Base URL:** `https://youtubeapi-india.herokuapp.com`\n"
+            "**Primary API:** `https://youtubeapi-india.herokuapp.com`\n\n"
             "**Endpoint:** `GET /download`\n"
             "**Params:** `url`, `type` (audio/video), `api_key`\n\n"
             "A ready-to-use Python client (Youtube.py) is available below, "
