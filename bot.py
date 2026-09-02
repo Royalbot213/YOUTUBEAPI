@@ -19,9 +19,9 @@ def require_env(name: str) -> str:
     return value
 
 
-API_ID = int(require_env("API_ID"))
-API_HASH = require_env("API_HASH")
-BOT_TOKEN = require_env("BOT_TOKEN")
+API_ID = int(require_env("25392624"))
+API_HASH = require_env("c9208c6e73e4d48a7a03c3ee296995be")
+BOT_TOKEN = require_env("8445491147:AAGsmkrcdtY1qNPgkGbi2yl_7fjV7hiNmQY")
 
 
 # =========================================================
