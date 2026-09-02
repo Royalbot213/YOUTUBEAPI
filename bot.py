@@ -1,5 +1,6 @@
 import os
 import io
+import asyncio
 from datetime import datetime, timedelta
 
 from pyrogram import Client, filters, idle
@@ -19,14 +20,21 @@ def require_env(name: str) -> str:
     return value
 
 
-API_ID = int(require_env("25392624"))
-API_HASH = require_env("c9208c6e73e4d48a7a03c3ee296995be")
-BOT_TOKEN = require_env("8445491147:AAGsmkrcdtY1qNPgkGbi2yl_7fjV7hiNmQY")
+API_ID = int(require_env("API_ID"))
+API_HASH = require_env("API_HASH")
+BOT_TOKEN = require_env("BOT_TOKEN")
 
 
 # =========================================================
 # PYROGRAM CLIENT
 # =========================================================
+
+# Pyrogram may access the current asyncio loop while creating the client.
+# Heroku/Python 3.11 may start with no loop in MainThread, so create one first.
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
 app = Client(
     "YouTubeapi",
@@ -1140,4 +1148,9 @@ if __name__ == "__main__":
             )
 
 
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    finally:
+        # Do not close Pyrogram's loop before its background cleanup completes.
+        pass

@@ -1,96 +1,74 @@
 import os
+import base64
+import hashlib
+import hmac
 import secrets
 from datetime import datetime, timedelta
 
-import aiosqlite
+# Heroku web and worker dynos do NOT share a local filesystem.  Therefore a
+# local SQLite DB cannot be used for API-key verification across both dynos.
+# This implementation creates signed, time-limited keys that can be verified
+# by either dyno without shared storage.
+KEY_SECRET = os.environ.get("API_KEY_SECRET") or os.environ.get("BOT_TOKEN", "change-me")
+PERIOD_DAYS = 30
+EPOCH = datetime(2026, 1, 1)
 
-DB_NAME = os.environ.get("DB_NAME", "ronak_system.db")
+
+def _period(now: datetime) -> tuple[datetime, datetime]:
+    elapsed = max((now - EPOCH).total_seconds(), 0)
+    period = int(elapsed // (PERIOD_DAYS * 86400))
+    start = EPOCH + timedelta(days=period * PERIOD_DAYS)
+    expiry = start + timedelta(days=PERIOD_DAYS)
+    return start, expiry
+
+
+def _make_key(user_id: int, period_start: datetime) -> str:
+    payload = f"{user_id}:{period_start.strftime('%Y%m%d')}".encode()
+    digest = hmac.new(KEY_SECRET.encode(), payload, hashlib.sha256).digest()[:12]
+    token = base64.urlsafe_b64encode(digest).decode().rstrip("=")
+    return f"RonakBots_{user_id}_{token}"
+
+
+def _parse_key(api_key: str):
+    if not api_key or not api_key.startswith("RonakBots_"):
+        return None
+    parts = api_key.split("_")
+    if len(parts) != 3:
+        return None
+    try:
+        user_id = int(parts[1])
+    except ValueError:
+        return None
+    return user_id, parts[2]
 
 
 async def init_db():
-    async with aiosqlite.connect(DB_NAME) as db:
-        await db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                api_key TEXT UNIQUE NOT NULL,
-                expiry_date TEXT NOT NULL
-            )
-            """
-        )
-        await db.commit()
+    # Kept for compatibility with api.py and bot.py. No local DB is required.
+    return None
 
 
 async def get_or_create_key(user_id: int):
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute(
-            "SELECT api_key, expiry_date FROM users WHERE user_id = ?",
-            (user_id,),
-        )
-        row = await cursor.fetchone()
-
-        now = datetime.now()
-
-        if row:
-            api_key, expiry_str = row
-            try:
-                expiry_date = datetime.fromisoformat(expiry_str)
-            except (TypeError, ValueError):
-                expiry_date = now - timedelta(seconds=1)
-
-            if now >= expiry_date:
-                new_key = f"RonakBots_{secrets.token_hex(8)}"
-                new_expiry = now + timedelta(days=30)
-
-                await db.execute(
-                    """
-                    UPDATE users
-                    SET api_key = ?, expiry_date = ?
-                    WHERE user_id = ?
-                    """,
-                    (new_key, new_expiry.isoformat(), user_id),
-                )
-                await db.commit()
-
-                return new_key, new_expiry, True
-
-            return api_key, expiry_date, False
-
-        new_key = f"RonakBots_{secrets.token_hex(8)}"
-        new_expiry = now + timedelta(days=30)
-
-        await db.execute(
-            """
-            INSERT INTO users (user_id, api_key, expiry_date)
-            VALUES (?, ?, ?)
-            """,
-            (user_id, new_key, new_expiry.isoformat()),
-        )
-        await db.commit()
-
-        return new_key, new_expiry, True
+    now = datetime.now()
+    start, expiry = _period(now)
+    key = _make_key(user_id, start)
+    return key, expiry, True
 
 
 async def verify_key(api_key: str):
-    if not api_key:
-        return False, "API Key is required"
+    parsed = _parse_key(api_key)
+    if not parsed:
+        return False, "Invalid API Key"
 
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute(
-            "SELECT expiry_date FROM users WHERE api_key = ?",
-            (api_key,),
-        )
-        row = await cursor.fetchone()
+    user_id, token = parsed
+    now = datetime.now()
+    start, expiry = _period(now)
+    expected = _make_key(user_id, start)
+    expected_token = expected.rsplit("_", 1)[1]
 
-        if not row:
-            return False, "Invalid API Key"
+    if not hmac.compare_digest(token, expected_token):
+        return False, "Invalid API Key"
 
-        try:
-            expiry_date = datetime.fromisoformat(row[0])
-        except (TypeError, ValueError):
-            return False, "Invalid API Key data"
+    if now >= expiry:
+        return False, "API Key Expired! Please get a new key from the bot."
 
-        if datetime.now() >= expiry_date:
-            return False, "API Key Expired! Please get a new key from the bot."
-
-        return True, "Valid"
+    return True, "Valid"
