@@ -1,57 +1,46 @@
-# Fresh YouTube API + Telegram Bot
+# 🎬 Fresh YouTube API + Telegram Bot
 
-A fresh Heroku-ready project containing:
+FastAPI YouTube Audio/Video API with a Telegram bot for API-key generation.
 
-- FastAPI web API
+## 🚀 Deploy to Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://www.heroku.com/deploy?template=https://github.com/Royalbot213/YOUTUBEAPI)
+
+## ✨ Features
+
+- YouTube → MP3
+- YouTube → MP4
+- 30-day API keys
 - Telegram bot
-- 30-day deterministic API keys
-- YouTube audio -> MP3
-- YouTube video -> MP4
+- FastAPI + Swagger
 - FFmpeg
-- No SQLite, so web and worker dynos do not need shared storage
+- No SQLite/shared-dyno database
 
-## Heroku Config Vars
+## 🔐 Required Config Vars
 
-Required:
+- `BOT_TOKEN` — Telegram BotFather token
+- `API_KEY_SECRET` — secret for API-key generation/verification
+- `API_BASE_URL` — optional public app URL
 
-- `BOT_TOKEN`
-- `API_KEY_SECRET`
+## ⚙️ Processes
 
-`API_KEY_SECRET` can be any long random secret.
+web: `uvicorn api:app --host 0.0.0.0 --port $PORT`
 
-Optional:
+worker: `python bot.py`
 
-- `API_BASE_URL` = your Heroku app URL
+## 🧪 Test
 
-Example:
-
-`https://your-app-name.herokuapp.com`
-
-## Deploy
-
-1. Create a new Heroku app.
-2. Deploy this project.
-3. Make sure the Apt buildpack is installed and `Aptfile` contains `ffmpeg`.
-4. Set the Config Vars.
-5. Scale:
-   - web = 1
-   - worker = 1
-
-The Procfile already contains both processes.
-
-## Test
-
-Open:
-
-`/health`
+`https://YOUR-APP.herokuapp.com/health`
 
 Expected:
 
-`{"status":"ok"}`
+```json
+{"status":"ok"}
+```
 
-Open `/docs` for Swagger.
+Swagger: `/docs`
 
-## API
+## 📥 Download
 
 GET `/download`
 
@@ -61,12 +50,22 @@ Parameters:
 - `type=audio` or `type=video`
 - `api_key`
 
-Example:
+## 🤖 Telegram
 
-`/download?url=https://www.youtube.com/watch?v=VIDEO_ID&type=audio&api_key=YOUR_KEY`
+Send `/start` to the bot to receive your API key.
 
-## Telegram
+## 📁 Project Structure
 
-Send `/start` to the bot.
+```text
+api.py
+bot.py
+requirements.txt
+Procfile
+Aptfile
+runtime.txt
+app.json
+README.md
+.gitignore
+```
 
-No `API_ID` or `API_HASH` is required because this version uses the Bot API through `python-telegram-bot`.
+Never upload bot tokens or secrets to GitHub. Use Heroku Config Vars.
