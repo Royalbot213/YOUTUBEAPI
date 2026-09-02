@@ -6,9 +6,9 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import database
 
 # अपनी डिटेल्स यहाँ डालें
-API_ID = 36735558 
-API_HASH = "fcd0e09634ee9e526a8da20e6d295cad"
-BOT_TOKEN = "8445491147:AAGsmkrcdtY1qNPgkGbi2yl_7fjV7hiNmQY"
+API_ID = int(os.environ["API_ID"])
+API_HASH = os.environ["API_HASH"]
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 
 app = Client("YouTubeapi", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -395,5 +395,21 @@ YouTube = YouTubeAPI()
         )
 
 if __name__ == "__main__":
-    print("Ronak API Bot with File Download Feature Started!")
-    app.run()
+    import asyncio
+    from pyrogram import idle
+
+    async def main():
+        print("Initializing database...")
+        await database.init_db()
+        print("Database initialized successfully!")
+
+        await app.start()
+        print("Ronak API Bot Started Successfully!")
+
+        await idle()
+
+        await app.stop()
+        print("Bot stopped.")
+
+    asyncio.run(main())
+    
